@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayden's Task Manager</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 2rem;
+      text-align: center;
+      background-color: #0f172a;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #185830;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+
+    .form-card, .task-category {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      background-color: #334155;
+      color: #e2e8f0;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #0f3e20;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #123e22;
+    }
+
+    .task {
+      background-color: #0f172a;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 6px solid;
+      border-radius: 8px;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .low { border-color: #1bae51; }
+    .medium { border-color: #eab308; }
+    .high { border-color: #ef4444; }
+
+    .completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      background-color: #334155;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-transform: capitalize;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Zayden's Task Manager</h1>
+  </header>
+
+  <div class="container">
+    <div class="form-card">
+      <label>Task Title:</label>
+      <input type="text" id="title" placeholder="e.g. Edit Podcast Episode" />
+
+      <label>Category:</label>
+      <select id="category">
+        <option>Podcast</option>
+        <option>Vinted</option>
+        <option>AI Site</option>
+      </select>
+
+      <label>Urgency:</label>
+      <select id="urgency">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <label>Due Date:</label>
+      <input type="date" id="due" />
+
+      <label>Notes:</label>
+      <textarea id="notes" placeholder="Additional info..."></textarea>
+
+      <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="controls">
+      <select onchange="setFilter(this.value)">
+        <option value="all">All Tasks</option>
+        <option value="completed">Completed</option>
+        <option value="urgent">Urgent Only</option>
+      </select>
+      <button onclick="sortBy('urgency')">Sort by Urgency</button>
+      <button onclick="sortBy('due')">Sort by Due Date</button>
+    </div>
+
+    <div id="task-list"></div>
+  </div>
+
+  <script>
+    const taskList = document.getElementById('task-list');
+    const categories = ['Podcast', 'Vinted', 'AI Site'];
+    let tasks = [];
+    let currentFilter = 'all';
+
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+      const saved = localStorage.getItem('tasks');
+      if (saved) tasks = JSON.parse(saved);
+    }
+
+    function addTask() {
+      const title = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const urgency = document.getElementById('urgency').value;
+      const due = document.getElementById('due').value;
+      const notes = document.getElementById('notes').value.trim();
+
+      if (!title) return alert('Please enter a task title.');
+
+      tasks.push({ title, category, urgency, due, notes, completed: false });
+      saveTasks();
+      renderTasks();
+
+      document.getElementById('title').value = '';
+      document.getElementById('due').value = '';
+      document.getElementById('notes').value = '';
+    }
+
+    function toggleComplete(index) {
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks();
+      renderTasks();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
+    }
+
+    function sortBy(type) {
+      if (type === 'urgency') {
+        const priority = { high: 1, medium: 2, low: 3 };
+        tasks.sort((a, b) => priority[a.urgency] - priority[b.urgency]);
+      } else if (type === 'due') {
+        tasks.sort((a, b) => new Date(a.due || 9999999999) - new Date(b.due || 9999999999));
+      }
+      renderTasks();
+    }
+
+    function setFilter(value) {
+      currentFilter = value;
+      renderTasks();
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+
+      categories.forEach(category => {
+        const filteredTasks = tasks.filter(task => {
+          if (task.category !== category) return false;
+          if (currentFilter === 'completed') return task.completed;
+          if (currentFilter === 'urgent') return task.urgency === 'high';
+          return true;
+        });
+
+        if (filteredTasks.length === 0) return;
+
+        const section = document.createElement('div');
+        section.className = 'task-category';
+        section.innerHTML = `<h2 style="color:#4ade80; margin-bottom:1rem;">${category}</h2>`;
+
+        filteredTasks.forEach((task, i) => {
+          const index = tasks.indexOf(task);
+          const taskDiv = document.createElement('div');
+          taskDiv.className = `task ${task.urgency} ${task.completed ? 'completed' : ''}`;
+
+          const dueDate = new Date(task.due);
+          const today = new Date();
+          const isLate = task.due && dueDate < today;
+          let dueText = `Due: ${task.due || 'No deadline'}`;
+          if (isLate) dueText = `<span style='color:#f87171;'>${dueText}</span>`;
+
+          taskDiv.innerHTML = `
+            <div class="task-header">
+              <strong>${task.title}</strong>
+              <span class="badge">${task.urgency}</span>
+            </div>
+            <p>${dueText}</p>
+            <p>${task.notes}</p>
+            <button onclick="toggleComplete(${index})">
+              ${task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+            </button>
+            <button onclick="deleteTask(${index})" style="margin-left:0.5rem;background:#ef4444;">
+              Delete
+            </button>
+          `;
+
+          section.appendChild(taskDiv);
+        });
+
+        taskList.appendChild(section);
+      });
+    }
+
+    loadTasks();
+    renderTasks();
+  </script>
+</body>
+</html>
