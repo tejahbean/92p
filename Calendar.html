@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task_R Calendar</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      width: 100%;
+      padding: 2rem;
+      text-align: center;
+      background-color: #0f172a;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #22c55e;
+    }
+
+    .calendar-container {
+      max-width: 900px;
+      width: 100%;
+      padding: 2rem;
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .month-header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #4ade80;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+
+    .day, .date {
+      background-color: #1e293b;
+      border-radius: 6px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .day {
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .date {
+      min-height: 60px;
+      position: relative;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .back-button {
+      margin-top: 2rem;
+      background-color: #22c55e;
+      color: #0f172a;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #16a34a;
+    }
+
+    @media (max-width: 600px) {
+      .calendar-grid {
+        grid-template-columns: repeat(7, 1fr);
+      }
+
+      .day, .date {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Task_R Calendar</h1>
+  </header>
+
+  <a href="Task_R.html" class="back-button">← Back to Task Manager</a>
+
+  <div class="calendar-container">
+    <div class="month-header">
+      <h2>July 2025</h2>
+    </div>
+    <div class="calendar-grid" id="calendar">
+      <div class="day">Sun</div>
+      <div class="day">Mon</div>
+      <div class="day">Tue</div>
+      <div class="day">Wed</div>
+      <div class="day">Thu</div>
+      <div class="day">Fri</div>
+      <div class="day">Sat</div>
+    </div>
+  </div>
+
+  <script>
+    const calendarEl = document.getElementById('calendar');
+    const daysInMonth = 31; // July 2025
+    const startDayIndex = 2; // July 1, 2025 is a Tuesday (0=Sun)
+
+    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    const taskDates = tasks.map(t => t.due).filter(Boolean);
+
+    // Add blank cells for padding before the 1st
+    for (let i = 0; i < startDayIndex; i++) {
+      const empty = document.createElement('div');
+      calendarEl.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateCell = document.createElement('div');
+      dateCell.className = 'date';
+      dateCell.innerText = day;
+
+      const iso = `2025-07-${String(day).padStart(2, '0')}`;
+      if (taskDates.includes(iso)) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dateCell.appendChild(dot);
+      }
+
+      calendarEl.appendChild(dateCell);
+    }
+  </script>
+</body>
+</html>
