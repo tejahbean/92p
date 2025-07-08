@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zayden's Task Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task_R | Task Management</title>
   <style>
     * {
       box-sizing: border-box;
@@ -29,6 +29,12 @@
       margin: 0;
       font-size: 2.5rem;
       color: #22c55e;
+    }
+
+    .subheading {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-top: 0.5rem;
     }
 
     .container {
@@ -133,6 +139,22 @@
       transition: width 0.3s ease-in-out;
     }
 
+    .nav-link {
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 1rem;
+      background-color: #334155;
+      color: #e2e8f0;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background-color: #475569;
+    }
+
     @media screen and (max-width: 600px) {
       h1 { font-size: 2rem; }
     }
@@ -140,7 +162,9 @@
 </head>
 <body>
   <header>
-    <h1>Zayden's Task Manager</h1>
+    <h1>Task_R</h1>
+    <p class="subheading">Task Management</p>
+    <a href="calendar.html" class="nav-link">📅 View Calendar</a>
   </header>
 
   <div class="container">
@@ -252,7 +276,6 @@
       const completed = tasks.filter(t => t.completed).length;
       const today = new Date().toISOString().split('T')[0];
       const dueToday = tasks.filter(t => t.due === today && !t.completed).length;
-
       const percent = total ? (completed / total) * 100 : 0;
 
       summaryBox.innerHTML = `
@@ -289,7 +312,7 @@
 
           const dueDate = new Date(task.due);
           const today = new Date();
-          const isLate = task.due && dueDate < today;
+          const isLate = task.due && dueDate < today && !task.completed;
           let dueText = `Due: ${task.due || 'No deadline'}`;
           if (isLate) dueText = `<span style='color:#f87171;'>${dueText}</span>`;
 
@@ -320,4 +343,3 @@
   </script>
 </body>
 </html>
-
