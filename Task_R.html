@@ -214,136 +214,225 @@
     <div id="task-list"></div>
   </div>
 
-  <script>
-    const taskList = document.getElementById('task-list');
-    const summaryBox = document.getElementById('summary');
-    const categories = ['Podcast', 'Vinted', 'AI Site'];
-    let tasks = [];
-    let currentFilter = 'all';
+<body>
+    <h1>TaskR</h1>
 
-    function saveTasks() {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
+    <form id="task-form" onsubmit="event.preventDefault(); addTask();">
+      <input
+        id="title"
+        type="text"
+        placeholder="Enter task title"
+        required
+        autofocus
+      />
+      <select id="category">
+        <option value="Podcast">Podcast</option>
+        <option value="Vinted">Vinted</option>
+        <option value="AI Site">AI Site</option>
+      </select>
+      <select id="urgency">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <input id="due" type="date" />
+      <textarea id="notes" rows="3" placeholder="Add notes..."></textarea>
+      <button class="btn" type="submit">Add Task</button>
+    </form>
 
-    function loadTasks() {
-      const saved = localStorage.getItem('tasks');
-      if (saved) tasks = JSON.parse(saved);
-    }
+    <div style="margin-top:1rem;">
+      <button class="btn" onclick="setFilter('all')">All</button>
+      <button class="btn" onclick="setFilter('completed')">Completed</button>
+      <button class="btn" onclick="setFilter('urgent')">Urgent</button>
+      <button class="btn" onclick="sortBy('urgency')">Sort by Urgency</button>
+      <button class="btn" onclick="sortBy('due')">Sort by Due Date</button>
+    </div>
 
-    function addTask() {
-      const title = document.getElementById('title').value.trim();
-      const category = document.getElementById('category').value;
-      const urgency = document.getElementById('urgency').value;
-      const due = document.getElementById('due').value;
-      const notes = document.getElementById('notes').value.trim();
+    <div id="task-list"></div>
 
-      if (!title) return alert('Please enter a task title.');
+    <div id="summary"></div>
 
-      tasks.push({ title, category, urgency, due, notes, completed: false });
-      saveTasks();
-      renderTasks();
+<script>
+const taskList = document.getElementById('task-list');
+const summaryBox = document.getElementById('summary');
+const categories = ['Podcast', 'Vinted', 'AI Site'];
+let tasks = [];
+let currentFilter = 'all';
 
-      document.getElementById('title').value = '';
-      document.getElementById('due').value = '';
-      document.getElementById('notes').value = '';
-    }
+const apiURL = '/taskr_api/tasks.php';
 
-    function toggleComplete(index) {
-      tasks[index].completed = !tasks[index].completed;
-      saveTasks();
-      renderTasks();
-    }
-
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      saveTasks();
-      renderTasks();
-    }
-
-    function sortBy(type) {
-      if (type === 'urgency') {
-        const priority = { high: 1, medium: 2, low: 3 };
-        tasks.sort((a, b) => priority[a.urgency] - priority[b.urgency]);
-      } else if (type === 'due') {
-        tasks.sort((a, b) => new Date(a.due || 9999999999) - new Date(b.due || 9999999999));
-      }
-      renderTasks();
-    }
-
-    function setFilter(value) {
-      currentFilter = value;
-      renderTasks();
-    }
-
-    function renderSummary() {
-      const total = tasks.length;
-      const completed = tasks.filter(t => t.completed).length;
-      const today = new Date().toISOString().split('T')[0];
-      const dueToday = tasks.filter(t => t.due === today && !t.completed).length;
-      const percent = total ? (completed / total) * 100 : 0;
-
-      summaryBox.innerHTML = `
-        <p><strong>${completed}</strong> of <strong>${total}</strong> tasks completed.</p>
-        <p><strong>${dueToday}</strong> task(s) due today.</p>
-        <div class="progress-bar">
-          <div class="progress-bar-inner" style="width: ${percent}%"></div>
-        </div>
-      `;
-    }
-
-    function renderTasks() {
-      taskList.innerHTML = '';
-      renderSummary();
-
-      categories.forEach(category => {
-        const filteredTasks = tasks.filter(task => {
-          if (task.category !== category) return false;
-          if (currentFilter === 'completed') return task.completed;
-          if (currentFilter === 'urgent') return task.urgency === 'high';
-          return true;
-        });
-
-        if (filteredTasks.length === 0) return;
-
-        const section = document.createElement('div');
-        section.className = 'task-category';
-        section.innerHTML = `<h2 style="color:#4ade80; margin-bottom:1rem;">${category}</h2>`;
-
-        filteredTasks.forEach((task, i) => {
-          const index = tasks.indexOf(task);
-          const taskDiv = document.createElement('div');
-          taskDiv.className = `task ${task.urgency} ${task.completed ? 'completed' : ''}`;
-
-          const dueDate = new Date(task.due);
-          const today = new Date();
-          const isLate = task.due && dueDate < today && !task.completed;
-          let dueText = `Due: ${task.due || 'No deadline'}`;
-          if (isLate) dueText = `<span style='color:#f87171;'>${dueText}</span>`;
-
-          taskDiv.innerHTML = `
-            <div class="task-header">
-              <strong>${task.title}</strong>
-              <span class="badge">${task.urgency}</span>
-            </div>
-            <p>${dueText}</p>
-            <p>${task.notes}</p>
-            <button onclick="toggleComplete(${index})">
-              ${task.completed ? 'Mark Incomplete' : 'Mark Complete'}
-            </button>
-            <button onclick="deleteTask(${index})" style="margin-left:0.5rem;background:#ef4444;">
-              Delete
-            </button>
-          `;
-
-          section.appendChild(taskDiv);
-        });
-
-        taskList.appendChild(section);
-      });
-    }
-
-    loadTasks();
+async function fetchTasks() {
+  try {
+    const res = await fetch(apiURL);
+    tasks = await res.json();
     renderTasks();
-  </script>
+  } catch (e) {
+    alert('Failed to load tasks from server');
+  }
+}
+
+async function saveTask(task) {
+  try {
+    const res = await fetch(apiURL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(task),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to save task');
+    fetchTasks();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+async function updateTask(id, completed) {
+  try {
+    const res = await fetch(apiURL, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({id, completed}),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to update task');
+    fetchTasks();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+async function deleteTaskAPI(id) {
+  try {
+    const res = await fetch(apiURL + '?id=' + id, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to delete task');
+    fetchTasks();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+function addTask() {
+  const title = document.getElementById('title').value.trim();
+  const category = document.getElementById('category').value;
+  const urgency = document.getElementById('urgency').value;
+  const due = document.getElementById('due').value;
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!title) return alert('Please enter a task title.');
+
+  const newTask = {title, category, urgency, due, notes};
+  saveTask(newTask);
+
+  // Clear inputs only on success (fetchTasks will reload tasks)
+  document.getElementById('title').value = '';
+  document.getElementById('due').value = '';
+  document.getElementById('notes').value = '';
+}
+
+function toggleComplete(index) {
+  const task = tasks[index];
+  if (!task) return;
+  updateTask(task.id, !task.completed);
+}
+
+function deleteTask(index) {
+  const task = tasks[index];
+  if (!task) return;
+  if (confirm(`Delete task "${task.title}"?`)) {
+    deleteTaskAPI(task.id);
+  }
+}
+
+function sortBy(type) {
+  if (type === 'urgency') {
+    const priority = { high: 1, medium: 2, low: 3 };
+    tasks.sort((a, b) => priority[a.urgency] - priority[b.urgency]);
+  } else if (type === 'due') {
+    tasks.sort((a, b) => new Date(a.due || 9999999999) - new Date(b.due || 9999999999));
+  }
+  renderTasks();
+}
+
+function setFilter(value) {
+  currentFilter = value;
+  renderTasks();
+}
+
+function renderSummary() {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.completed).length;
+  const today = new Date().toISOString().split('T')[0];
+  const dueToday = tasks.filter(t => t.due === today && !t.completed).length;
+  const percent = total ? (completed / total) * 100 : 0;
+
+  summaryBox.innerHTML = `
+    <p><strong>${completed}</strong> of <strong>${total}</strong> tasks completed.</p>
+    <p><strong>${dueToday}</strong> task(s) due today.</p>
+    <div class="progress-bar">
+      <div class="progress-bar-inner" style="width: ${percent}%"></div>
+    </div>
+  `;
+}
+
+function renderTasks() {
+  taskList.innerHTML = '';
+  renderSummary();
+
+  categories.forEach(category => {
+    const filteredTasks = tasks.filter(task => {
+      if (task.category !== category) return false;
+      if (currentFilter === 'completed') return task.completed;
+      if (currentFilter === 'urgent') return task.urgency === 'high';
+      return true;
+    });
+
+    if (filteredTasks.length === 0) return;
+
+    const section = document.createElement('div');
+    section.className = 'task-category';
+    section.innerHTML = `<h2 style="color:#4ade80; margin-bottom:1rem;">${category}</h2>`;
+
+    filteredTasks.forEach((task) => {
+      const index = tasks.indexOf(task);
+      const taskDiv = document.createElement('div');
+      taskDiv.className = `task ${task.urgency} ${task.completed ? 'completed' : ''}`;
+
+      const dueDate = new Date(task.due);
+      const today = new Date();
+      const isLate = task.due && dueDate < today && !task.completed;
+      let dueText = `Due: ${task.due || 'No deadline'}`;
+      if (isLate) dueText = `<span style='color:#f87171;'>${dueText}</span>`;
+
+      taskDiv.innerHTML = `
+        <div class="task-header">
+          <strong>${task.title}</strong>
+          <span class="badge">${task.urgency}</span>
+        </div>
+        <p>${dueText}</p>
+        <p>${task.notes}</p>
+        <button onclick="toggleComplete(${index})">
+          ${task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+        </button>
+        <button onclick="deleteTask(${index})" style="margin-left:0.5rem;background:#ef4444;">
+          Delete
+        </button>
+      `;
+
+      section.appendChild(taskDiv);
+    });
+
+    taskList.appendChild(section);
+  });
+}
+
+// Initial load of tasks from backend API
+fetchTasks();
+</script>
+</body>
+</html>
+
 </body>
 </html>
