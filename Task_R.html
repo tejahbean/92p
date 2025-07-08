@@ -1,316 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TaskR</title>
-    <style>
-      /* Your existing CSS kept unchanged */
-      body {
-        font-family: Arial, sans-serif;
-        margin: 2rem;
-        background: #0f172a;
-        color: white;
-      }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task_R | Task Management</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-      input,
-      select,
-      textarea,
-      button {
-        font-family: inherit;
-        font-size: 1rem;
-      }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
 
-      .btn {
-        background-color: #2563eb;
-        border: none;
-        padding: 0.5rem 1rem;
-        color: white;
-        cursor: pointer;
-        border-radius: 4px;
-      }
+    header {
+      padding: 2rem;
+      text-align: center;
+      background-color: #0f172a;
+      border-bottom: 1px solid #1e293b;
+    }
 
-      .btn:hover {
-        background-color: #1d4ed8;
-      }
+    h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #22c55e;
+    }
 
-      .task {
-        border: 1px solid #334155;
-        border-radius: 5px;
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        background: #1e293b;
-      }
+    .subheading {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-top: 0.5rem;
+    }
 
-      .task.completed {
-        text-decoration: line-through;
-        opacity: 0.6;
-      }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
 
-      .task.high {
-        border-left: 5px solid #ef4444;
-      }
+    .form-card, .task-category {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
 
-      .task.medium {
-        border-left: 5px solid #facc15;
-      }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      background-color: #334155;
+      color: #e2e8f0;
+      font-size: 1rem;
+    }
 
-      .task.low {
-        border-left: 5px solid #4ade80;
-      }
+    button {
+      background-color: #22c55e;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
 
-      .badge {
-        background-color: #2563eb;
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        color: white;
-      }
+    button:hover {
+      background-color: #16a34a;
+    }
 
-      #summary {
-        margin-top: 2rem;
-        padding: 1rem;
-        border: 1px solid #334155;
-        border-radius: 5px;
-        background: #1e293b;
-      }
+    .task {
+      background-color: #0f172a;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 6px solid;
+      border-radius: 8px;
+      animation: fadeIn 0.3s ease-in;
+    }
 
-      .progress-bar {
-        background-color: #334155;
-        border-radius: 4px;
-        overflow: hidden;
-        height: 15px;
-        margin-top: 0.5rem;
-      }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-      .progress-bar-inner {
-        height: 100%;
-        background-color: #4ade80;
-        width: 0%;
-      }
+    .low { border-color: #22c55e; }
+    .medium { border-color: #eab308; }
+    .high { border-color: #ef4444; }
 
-      .task-category {
-        margin-top: 2rem;
-      }
-    </style>
+    .completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      background-color: #334155;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-transform: capitalize;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .progress-summary {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+    }
+
+    .progress-bar {
+      height: 20px;
+      border-radius: 6px;
+      background-color: #334155;
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      background-color: #22c55e;
+      width: 0;
+      transition: width 0.3s ease-in-out;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 1rem;
+      background-color: #334155;
+      color: #e2e8f0;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background-color: #475569;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 { font-size: 2rem; }
+    }
+  </style>
 </head>
 <body>
-    <h1>TaskR</h1>
+  <header>
+    <h1>Task_R</h1>
+    <p class="subheading">Task Management</p>
+    <a href="calendar.html" class="nav-link">📅 View Calendar</a>
+    
+    <a href="Homepage.html" class="nav-link">← Back to Homepage</a>
+  </header>
 
-    <form id="task-form" onsubmit="event.preventDefault(); addTask();">
-      <input
-        id="title"
-        type="text"
-        placeholder="Enter task title"
-        required
-        autofocus
-      />
+  <div class="container">
+    <div class="form-card">
+      <label>Task Title:</label>
+      <input type="text" id="title" placeholder="e.g. Edit Podcast Episode" />
+
+      <label>Category:</label>
       <select id="category">
-        <option value="Podcast">Podcast</option>
-        <option value="Vinted">Vinted</option>
-        <option value="AI Site">AI Site</option>
+        <option>Podcast</option>
+        <option>Vinted</option>
+        <option>AI Site</option>
+        <option>Other</option>
+      
       </select>
+
+      <label>Urgency:</label>
       <select id="urgency">
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
       </select>
-      <input id="due" type="date" />
-      <textarea id="notes" rows="3" placeholder="Add notes..."></textarea>
-      <button class="btn" type="submit">Add Task</button>
-    </form>
 
-    <div style="margin-top:1rem;">
-      <button class="btn" onclick="setFilter('all')">All</button>
-      <button class="btn" onclick="setFilter('completed')">Completed</button>
-      <button class="btn" onclick="setFilter('urgent')">Urgent</button>
-      <button class="btn" onclick="sortBy('urgency')">Sort by Urgency</button>
-      <button class="btn" onclick="sortBy('due')">Sort by Due Date</button>
+      <label>Due Date:</label>
+      <input type="date" id="due" />
+
+      <label>Notes:</label>
+      <textarea id="notes" placeholder="Additional info..."></textarea>
+
+      <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="progress-summary" id="summary"></div>
+
+    <div class="controls">
+      <select onchange="setFilter(this.value)">
+        <option value="all">All Tasks</option>
+        <option value="completed">Completed</option>
+        <option value="urgent">Urgent Only</option>
+      </select>
+      <button onclick="sortBy('urgency')">Sort by Urgency</button>
+      <button onclick="sortBy('due')">Sort by Due Date</button>
     </div>
 
     <div id="task-list"></div>
+  </div>
 
-    <div id="summary"></div>
+  <script>
+    const taskList = document.getElementById('task-list');
+    const summaryBox = document.getElementById('summary');
+    const categories = ['Podcast', 'Vinted', 'AI Site'];
+    let tasks = [];
+    let currentFilter = 'all';
 
-<script>
-const taskList = document.getElementById('task-list');
-const summaryBox = document.getElementById('summary');
-const categories = ['Podcast', 'Vinted', 'AI Site'];
-let tasks = [];
-let currentFilter = 'all';
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
 
-const apiURL = '/taskr_api/tasks.php';
+    function loadTasks() {
+      const saved = localStorage.getItem('tasks');
+      if (saved) tasks = JSON.parse(saved);
+    }
 
-async function fetchTasks() {
-  try {
-    const res = await fetch(apiURL);
-    tasks = await res.json();
-    renderTasks();
-  } catch (e) {
-    alert('Failed to load tasks from server');
-  }
-}
+    function addTask() {
+      const title = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const urgency = document.getElementById('urgency').value;
+      const due = document.getElementById('due').value;
+      const notes = document.getElementById('notes').value.trim();
 
-async function saveTask(task) {
-  try {
-    const res = await fetch(apiURL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(task),
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Failed to save task');
-    fetchTasks();
-  } catch (e) {
-    alert(e.message);
-  }
-}
+      if (!title) return alert('Please enter a task title.');
 
-async function updateTask(id, completed) {
-  try {
-    const res = await fetch(apiURL, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({id, completed}),
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Failed to update task');
-    fetchTasks();
-  } catch (e) {
-    alert(e.message);
-  }
-}
+      tasks.push({ title, category, urgency, due, notes, completed: false });
+      saveTasks();
+      renderTasks();
 
-async function deleteTaskAPI(id) {
-  try {
-    const res = await fetch(apiURL + '?id=' + id, {
-      method: 'DELETE',
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Failed to delete task');
-    fetchTasks();
-  } catch (e) {
-    alert(e.message);
-  }
-}
+      document.getElementById('title').value = '';
+      document.getElementById('due').value = '';
+      document.getElementById('notes').value = '';
+    }
 
-function addTask() {
-  const title = document.getElementById('title').value.trim();
-  const category = document.getElementById('category').value;
-  const urgency = document.getElementById('urgency').value;
-  const due = document.getElementById('due').value;
-  const notes = document.getElementById('notes').value.trim();
+    function toggleComplete(index) {
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks();
+      renderTasks();
+    }
 
-  if (!title) return alert('Please enter a task title.');
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
+    }
 
-  const newTask = {title, category, urgency, due, notes};
-  saveTask(newTask);
+    function sortBy(type) {
+      if (type === 'urgency') {
+        const priority = { high: 1, medium: 2, low: 3 };
+        tasks.sort((a, b) => priority[a.urgency] - priority[b.urgency]);
+      } else if (type === 'due') {
+        tasks.sort((a, b) => new Date(a.due || 9999999999) - new Date(b.due || 9999999999));
+      }
+      renderTasks();
+    }
 
-  // Clear inputs only on success (fetchTasks will reload tasks)
-  document.getElementById('title').value = '';
-  document.getElementById('due').value = '';
-  document.getElementById('notes').value = '';
-}
+    function setFilter(value) {
+      currentFilter = value;
+      renderTasks();
+    }
 
-function toggleComplete(index) {
-  const task = tasks[index];
-  if (!task) return;
-  updateTask(task.id, !task.completed);
-}
+    function renderSummary() {
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.completed).length;
+      const today = new Date().toISOString().split('T')[0];
+      const dueToday = tasks.filter(t => t.due === today && !t.completed).length;
+      const percent = total ? (completed / total) * 100 : 0;
 
-function deleteTask(index) {
-  const task = tasks[index];
-  if (!task) return;
-  if (confirm(`Delete task "${task.title}"?`)) {
-    deleteTaskAPI(task.id);
-  }
-}
-
-function sortBy(type) {
-  if (type === 'urgency') {
-    const priority = { high: 1, medium: 2, low: 3 };
-    tasks.sort((a, b) => priority[a.urgency] - priority[b.urgency]);
-  } else if (type === 'due') {
-    tasks.sort((a, b) => new Date(a.due || 9999999999) - new Date(b.due || 9999999999));
-  }
-  renderTasks();
-}
-
-function setFilter(value) {
-  currentFilter = value;
-  renderTasks();
-}
-
-function renderSummary() {
-  const total = tasks.length;
-  const completed = tasks.filter(t => t.completed).length;
-  const today = new Date().toISOString().split('T')[0];
-  const dueToday = tasks.filter(t => t.due === today && !t.completed).length;
-  const percent = total ? (completed / total) * 100 : 0;
-
-  summaryBox.innerHTML = `
-    <p><strong>${completed}</strong> of <strong>${total}</strong> tasks completed.</p>
-    <p><strong>${dueToday}</strong> task(s) due today.</p>
-    <div class="progress-bar">
-      <div class="progress-bar-inner" style="width: ${percent}%"></div>
-    </div>
-  `;
-}
-
-function renderTasks() {
-  taskList.innerHTML = '';
-  renderSummary();
-
-  categories.forEach(category => {
-    const filteredTasks = tasks.filter(task => {
-      if (task.category !== category) return false;
-      if (currentFilter === 'completed') return task.completed;
-      if (currentFilter === 'urgent') return task.urgency === 'high';
-      return true;
-    });
-
-    if (filteredTasks.length === 0) return;
-
-    const section = document.createElement('div');
-    section.className = 'task-category';
-    section.innerHTML = `<h2 style="color:#4ade80; margin-bottom:1rem;">${category}</h2>`;
-
-    filteredTasks.forEach((task) => {
-      const index = tasks.indexOf(task);
-      const taskDiv = document.createElement('div');
-      taskDiv.className = `task ${task.urgency} ${task.completed ? 'completed' : ''}`;
-
-      const dueDate = new Date(task.due);
-      const today = new Date();
-      const isLate = task.due && dueDate < today && !task.completed;
-      let dueText = `Due: ${task.due || 'No deadline'}`;
-      if (isLate) dueText = `<span style='color:#f87171;'>${dueText}</span>`;
-
-      taskDiv.innerHTML = `
-        <div class="task-header">
-          <strong>${task.title}</strong>
-          <span class="badge">${task.urgency}</span>
+      summaryBox.innerHTML = `
+        <p><strong>${completed}</strong> of <strong>${total}</strong> tasks completed.</p>
+        <p><strong>${dueToday}</strong> task(s) due today.</p>
+        <div class="progress-bar">
+          <div class="progress-bar-inner" style="width: ${percent}%"></div>
         </div>
-        <p>${dueText}</p>
-        <p>${task.notes}</p>
-        <button onclick="toggleComplete(${index})">
-          ${task.completed ? 'Mark Incomplete' : 'Mark Complete'}
-        </button>
-        <button onclick="deleteTask(${index})" style="margin-left:0.5rem;background:#ef4444;">
-          Delete
-        </button>
       `;
+    }
 
-      section.appendChild(taskDiv);
-    });
+    function renderTasks() {
+      taskList.innerHTML = '';
+      renderSummary();
 
-    taskList.appendChild(section);
-  });
-}
+      categories.forEach(category => {
+        const filteredTasks = tasks.filter(task => {
+          if (task.category !== category) return false;
+          if (currentFilter === 'completed') return task.completed;
+          if (currentFilter === 'urgent') return task.urgency === 'high';
+          return true;
+        });
 
-// Initial load of tasks from backend API
-fetchTasks();
-</script>
+        if (filteredTasks.length === 0) return;
+
+        const section = document.createElement('div');
+        section.className = 'task-category';
+        section.innerHTML = `<h2 style="color:#4ade80; margin-bottom:1rem;">${category}</h2>`;
+
+        filteredTasks.forEach((task, i) => {
+          const index = tasks.indexOf(task);
+          const taskDiv = document.createElement('div');
+          taskDiv.className = `task ${task.urgency} ${task.completed ? 'completed' : ''}`;
+
+          const dueDate = new Date(task.due);
+          const today = new Date();
+          const isLate = task.due && dueDate < today && !task.completed;
+          let dueText = `Due: ${task.due || 'No deadline'}`;
+          if (isLate) dueText = `<span style='color:#f87171;'>${dueText}</span>`;
+
+          taskDiv.innerHTML = `
+            <div class="task-header">
+              <strong>${task.title}</strong>
+              <span class="badge">${task.urgency}</span>
+            </div>
+            <p>${dueText}</p>
+            <p>${task.notes}</p>
+            <button onclick="toggleComplete(${index})">
+              ${task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+            </button>
+            <button onclick="deleteTask(${index})" style="margin-left:0.5rem;background:#ef4444;">
+              Delete
+            </button>
+          `;
+
+          section.appendChild(taskDiv);
+        });
+
+        taskList.appendChild(section);
+      });
+    }
+
+    loadTasks();
+    renderTasks();
+  </script>
 </body>
 </html>
